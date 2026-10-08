@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block title %}Admin · {{ app_name }}{% endblock %}
+{% block nav %}<a href="{{ url_for('web.index') }}">Home</a><a href="{{ url_for('web.admin') }}">Admin</a>{% endblock %}
+{% block navright %}<span class="tag y">{{ user.username }}</span><a href="{{ url_for('web.logout') }}">Sign out</a>{% endblock %}
+{% block content %}
+{% set active = users | selectattr('enable') | list | length %}
+{% set revenue = orders | selectattr('status', 'equalto', 1) | map(attribute='amount') | sum %}
+<div class="row" style="margin-bottom:14px">
+  <span class="stat"><b>{{ users | length }}</b><span>users</span></span>
+  <span class="stat"><b>{{ active }}</b><span>enabled</span></span>
+  <span class="stat"><b>{{ nodes | length }}</b><span>nodes</span></span>
+  <span class="stat"><b>{{ goods | length }}</b><span>plans</span></span>
+  <span class="stat"><b>{{ '$%.2f'|format(revenue) }}</b><span>paid orders</span></span>
+  <span class="sp"></span>
+  <span class="tag">{{ orders | length }} orders</span>
+</div>
+
+<div class="card">
+  <h4>Users ({{ users | length }})</h4>
+  {% if users %}
+  <table>
+    <thead><tr><th>id</th><th>username</th><th>port</th><th>rate up/down</th><th>used / quota</th><th>role</th><th>state</th></tr></thead>
+    <tbody>
+    {% for u in users %}
+      <tr>
+        <td class="mono">{{ u.id }}</td>
+        <td>{{ u.username }}</td>
+        <td class="mono">{{ u.ss_port }}</td>
+        <td>{{ u.rate_up_mbps }} / {{ u.rate_down_mbps }}</td>
+        <td>{{ '%.2f'|format(u.used_traffic() / 1073741824) }} / {{ '%d'|format((u.total_traffic or 0) // 1073741824) }} GiB</td>
+        <td>{% if u.is_admin %}<span class="tag y">admin</span>{% else %}user{% endif %}</td>
+        <td>{% if u.enable %}<span class="tag g">enabled</span>{% else %}<span class="tag r">disabled</span>{% endif %}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p style="color:var(--muted);margin:0">No users in the database.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h4>Nodes ({{ nodes | length }})</h4>
+  {% if nodes %}
+  <table>
+    <thead><tr><th>id</th><th>name</th><th>server</th><th>port</th><th>country</th><th>used</th><th>last seen</th><th>state</th></tr></thead>
+    <tbody>
+    {% for n in nodes %}
+      <tr>
+        <td class="mono">{{ n.id }}</td>
+        <td>{{ n.name }}</td>
+        <td class="mono">{{ n.server }}</td>
+        <td class="mono">{{ n.ss_port }}</td>
+        <td>{{ n.country }}</td>
+        <td>{{ '%.2f'|format((n.used_traffic or 0) / 1073741824) }} GiB</td>
+        <td class="mono">{{ n.last_seen.strftime('%Y-%m-%d %H:%M') if n.last_seen else 'never' }}</td>
+        <td>{% if n.enable %}<span class="tag g">enabled</span>{% else %}<span class="tag r">disabled</span>{% endif %}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p style="color:var(--muted);margin:0">No nodes registered.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h4>Plans ({{ goods | length }})</h4>
+  {% if goods %}
+  <table>
+    <thead><tr><th>id</th><th>name</th><th>transfer</th><th>days</th><th>price</th><th>state</th></tr></thead>
+    <tbody>
+    {% for g in goods %}
+      <tr>
+        <td class="mono">{{ g.id }}</td>
+        <td>{{ g.name }}</td>
+        <td>{{ '%d'|format((g.transfer or 0) // 1073741824) }} GiB</td>
+        <td>{{ g.days }}</td>
+        <td>{{ '$%.2f'|format(g.money) if g.money else 'free' }}</td>
+        <td>{% if g.status %}<span class="tag g">listed</span>{% else %}<span class="tag r">delisted</span>{% endif %}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p style="color:var(--muted);margin:0">No plans defined.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h4>Orders ({{ orders | length }})</h4>
+  {% if orders %}
+  <table>
+    <thead><tr><th>id</th><th>user</th><th>goods</th><th>amount</th><th>status</th><th>trade no</th><th>created</th></tr></thead>
+    <tbody>
+    {% for o in orders %}
+      <tr>
+        <td class="mono">{{ o.id }}</td>
+        <td class="mono">{{ o.user_id }}</td>
+        <td class="mono">{{ o.goods_id }}</td>
+        <td>{{ '$%.2f'|format(o.amount or 0) }}</td>
+        <td>{% if o.status == 1 %}<span class="tag g">paid</span>{% else %}<span class="tag y">pending</span>{% endif %}</td>
+        <td class="mono">{{ o.out_trade_no or '-' }}</td>
+        <td class="mono">{{ o.created_at.strftime('%Y-%m-%d %H:%M') if o.created_at else '-' }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p style="color:var(--muted);margin:0">
+    No orders yet. <code class="mono">/api/admin/analytics</code> reports the same
+    <code class="mono">status=1</code> revenue sum.
+  </p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h4>JSON API</h4>
+  <div class="mono" style="color:var(--muted);line-height:1.9">
+    GET  {{ url_for('api.health') }} - liveness counters, no auth<br>
+    GET  /api/subscribe?token=&lt;user id&gt; - 401 without a numeric token, 404 for an unknown id<br>
+    POST /api/traffic - requires header X-API-Token, else 401<br>
+    POST /api/admin/users - requires an admin session, else 403<br>
+    GET  /api/admin/analytics - requires an admin session, else 403
+  </div>
+</div>
+{% endblock %}

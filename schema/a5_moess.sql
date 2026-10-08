@@ -1,0 +1,7 @@
+-- ⚡ moeSS schema
+CREATE TABLE users(id INTEGER PRIMARY KEY, username TEXT UNIQUE, password_hash TEXT, ss_port INTEGER UNIQUE, ss_password TEXT, ss_method TEXT DEFAULT 'aes-256-gcm', rate_up_mbps INTEGER DEFAULT 10, rate_down_mbps INTEGER DEFAULT 10, upload_traffic INTEGER DEFAULT 0, download_traffic INTEGER DEFAULT 0, total_traffic INTEGER DEFAULT 21474836480, enable INTEGER DEFAULT 1, is_admin INTEGER DEFAULT 0, created_at DATETIME);
+CREATE TABLE nodes(id INTEGER PRIMARY KEY, name TEXT, server TEXT, ss_port INTEGER DEFAULT 8388, ss_method TEXT DEFAULT 'aes-256-gcm', country TEXT, used_traffic INTEGER DEFAULT 0, total_traffic INTEGER DEFAULT 1073741824, enable INTEGER DEFAULT 1, last_seen DATETIME);
+CREATE TABLE traffic_logs(id INTEGER PRIMARY KEY, user_id INTEGER, node_id INTEGER, upload INTEGER DEFAULT 0, download INTEGER DEFAULT 0, created_at DATETIME);
+CREATE TABLE invite_codes(id INTEGER PRIMARY KEY, code TEXT UNIQUE, user_id INTEGER DEFAULT 0, consumed INTEGER DEFAULT 0, consumed_by TEXT, created_at DATETIME);
+CREATE TABLE goods(id INTEGER PRIMARY KEY, name TEXT, content TEXT, transfer INTEGER DEFAULT 1073741824, money REAL DEFAULT 0, level INTEGER DEFAULT 0, days INTEGER DEFAULT 30, status INTEGER DEFAULT 1);
+CREATE TABLE orders(id INTEGER PRIMARY KEY, user_id INTEGER, goods_id INTEGER, status INTEGER DEFAULT 0, amount REAL DEFAULT 0, out_trade_no TEXT UNIQUE, created_at DATETIME);

@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %}{% if user %}Dashboard{% else %}Home{% endif %} · {{ app_name }}{% endblock %}
+{% block nav %}<a href="{{ url_for('web.index') }}">Home</a><a href="{{ url_for('api.health') }}">API</a>{% endblock %}
+{% block navright %}
+  {% if user %}
+    <span class="tag">{{ user.username }}</span>
+    {% if user.is_admin %}<a href="{{ url_for('web.admin') }}">Admin</a>{% endif %}
+    <a href="{{ url_for('web.logout') }}">Sign out</a>
+  {% else %}
+    <a href="{{ url_for('web.login') }}">Sign in</a>
+  {% endif %}
+{% endblock %}
+{% block content %}
+
+{% if user %}
+{% set used = user.used_traffic() %}
+{% set total = user.total_traffic or 0 %}
+{% set pct = (used * 100.0 / total) if total else 0 %}
+<div class="row" style="margin-bottom:14px">
+  <span class="stat"><b>{{ user.username }}</b><span>account{% if user.is_admin %} · admin{% endif %}</span></span>
+  <span class="stat"><b>{{ '%.2f'|format(used / 1073741824) }} GiB</b><span>used</span></span>
+  <span class="stat"><b>{{ '%d'|format(total // 1073741824) }} GiB</b><span>quota</span></span>
+  <span class="stat"><b>{{ nodes | length }}</b><span>nodes</span></span>
+  <span class="sp"></span>
+  {% if user.enable %}<span class="tag g">enabled</span>{% else %}<span class="tag r">disabled</span>{% endif %}
+  {% if user.overflow() %}<span class="tag y">quota exhausted</span>{% endif %}
+</div>
+
+<div class="card">
+  <h4>Quota</h4>
+  <div class="bar"><i style="width:{{ '%.1f'|format(pct if pct < 100 else 100) }}%"></i></div>
+  <div class="mono" style="color:var(--muted);margin-top:6px">
+    {{ '%.2f'|format(used / 1073741824) }} GiB / {{ '%d'|format(total // 1073741824) }} GiB used
+    ({{ '%.1f'|format(pct) }}%)
+  </div>
+</div>
+
+<div class="card">
+  <h4>Subscription</h4>
+  <div class="code">{{ url_for('api.subscribe', token=user.id, _external=True) }}</div>
+  <p style="color:var(--muted);font-size:12px;margin:8px 0 0">
+    Add <code class="mono">&amp;sub_type=clash</code> for a Clash config. The value in
+    <code class="mono">token=</code> is this account's id and is the only credential the
+    endpoint needs.
+  </p>
+</div>
+
+<div class="card">
+  <h4>Rate limit</h4>
+  <table>
+    <tr><th>port</th><th>method</th><th>up</th><th>down</th></tr>
+    <tr>
+      <td class="mono">{{ user.ss_port }}</td>
+      <td class="mono">{{ user.ss_method }}</td>
+      <td>{{ user.rate_up_mbps }} Mbps</td>
+      <td>{{ user.rate_down_mbps }} Mbps</td>
+    </tr>
+  </table>
+</div>
+
+{% else %}
+<div class="card">
+  <h2>ShadowSocks management panel</h2>
+  <p style="color:var(--muted);margin:0">
+    {{ nodes | selectattr('enable') | list | length }} node(s) are currently in the published
+    subscription set. Sign in to see your own quota, ports and subscription URL.
+  </p>
+  <div class="row" style="margin-top:14px">
+    <a class="btn" href="{{ url_for('web.login') }}" style="text-decoration:none">Sign in</a>
+  </div>
+</div>
+{% endif %}
+
+<div class="card">
+  <h4>Nodes ({{ nodes | length }})</h4>
+  {% if nodes %}
+  <table>
+    <thead><tr><th>name</th><th>server</th><th>port</th><th>country</th><th>used</th><th>state</th></tr></thead>
+    <tbody>
+    {% for n in nodes %}
+      <tr>
+        <td>{{ n.name }}</td>
+        <td class="mono">{{ n.server }}</td>
+        <td class="mono">{{ n.ss_port }}</td>
+        <td>{{ n.country }}</td>
+        <td>{{ '%.2f'|format((n.used_traffic or 0) / 1073741824) }} GiB</td>
+        <td>{% if n.enable %}<span class="tag g">published</span>{% else %}<span class="tag r">disabled</span>{% endif %}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p style="color:var(--muted);margin:0">No nodes registered. <code class="mono">seed.py</code> adds three on first run.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h4>Plans ({{ goods | length }})</h4>
+  {% if goods %}
+  <table>
+    <thead><tr><th>name</th><th>transfer</th><th>days</th><th>price</th></tr></thead>
+    <tbody>
+    {% for g in goods %}
+      <tr>
+        <td>{{ g.name }}</td>
+        <td>{{ '%d'|format((g.transfer or 0) // 1073741824) }} GiB</td>
+        <td>{{ g.days }}</td>
+        <td>{{ '$%.2f'|format(g.money) if g.money else 'free' }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <p style="color:var(--muted);font-size:12px;margin:10px 0 0">
+    Prices and transfers are read from the <code class="mono">goods</code> table.
+    There is no checkout route in this scaffold.
+  </p>
+  {% else %}
+  <p style="color:var(--muted);margin:0">No plans are on sale.</p>
+  {% endif %}
+</div>
+{% endblock %}

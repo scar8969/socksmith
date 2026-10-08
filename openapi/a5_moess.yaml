@@ -1,0 +1,69 @@
+openapi: 3.0.0
+info:
+  title: "U0001f6f0 moeSS"
+  version: 0.1.0
+paths:
+  /api/subscribe:
+    get:
+      summary: subscription
+      description: >-
+        Returns the subscription payload for one user. `token` is that user's
+        numeric id and doubles as the credential for this endpoint: a missing or
+        non-numeric token is rejected with 401, a well-formed token with no
+        matching user is a 404.
+      parameters:
+        - name: token
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: sub_type
+          in: query
+          required: false
+          schema:
+            type: string
+            default: ss
+      responses:
+        "200":
+          description: ok
+        "401":
+          description: token missing or not numeric
+        "404":
+          description: no user with that id
+  /api/traffic:
+    post:
+      summary: traffic sync
+      description: Requires the `X-API-Token` header; a mismatch is a 401. An
+        unknown user_id or node_id is a 404.
+      responses:
+        "200":
+          description: ok
+        "401":
+          description: X-API-Token missing or wrong
+        "404":
+          description: no user or node with that id
+  /api/admin/users:
+    post:
+      summary: add user
+      description: Requires an authenticated session whose user is an admin.
+      responses:
+        "200":
+          description: ok
+        "403":
+          description: caller is anonymous or not an admin
+  /api/admin/analytics:
+    get:
+      summary: analytics
+      description: Requires an authenticated session whose user is an admin.
+      responses:
+        "200":
+          description: ok
+        "403":
+          description: caller is anonymous or not an admin
+  /api/health:
+    get:
+      summary: liveness counters
+      description: Unauthenticated counter snapshot used by the base template footer.
+      responses:
+        "200":
+          description: ok
