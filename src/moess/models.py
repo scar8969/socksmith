@@ -1,10 +1,11 @@
-import hashlib, secrets, string, uuid
-
+import hashlib
 from datetime import datetime
+
 from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
-GB = 1024 ** 3
+GB = 1024**3
+
 
 class User(db.Model):
     __tablename__ = "users"
@@ -25,15 +26,29 @@ class User(db.Model):
 
     def set_password(self, raw):
         self.password_hash = _hash(raw, "moess")
+
     def check_password(self, raw):
         return self.password_hash == _hash(raw, "moess")
-    def used_traffic(self): return (self.upload_traffic or 0) + (self.download_traffic or 0)
-    def overflow(self): return self.used_traffic() >= (self.total_traffic or 0)
+
+    def used_traffic(self):
+        return (self.upload_traffic or 0) + (self.download_traffic or 0)
+
+    def overflow(self):
+        return self.used_traffic() >= (self.total_traffic or 0)
+
     def to_dict(self):
-        return {"id": self.id, "username": self.username, "ss_port": self.ss_port,
-                "rate_up": self.rate_up_mbps, "rate_down": self.rate_down_mbps,
-                "used": self.used_traffic(), "total": self.total_traffic,
-                "enable": self.enable, "is_admin": self.is_admin}
+        return {
+            "id": self.id,
+            "username": self.username,
+            "ss_port": self.ss_port,
+            "rate_up": self.rate_up_mbps,
+            "rate_down": self.rate_down_mbps,
+            "used": self.used_traffic(),
+            "total": self.total_traffic,
+            "enable": self.enable,
+            "is_admin": self.is_admin,
+        }
+
     def __init__(self, **kw):
         # A column default only materialises at INSERT, so the two values the
         # panel reads before a flush are seeded here as well.
@@ -52,6 +67,7 @@ class User(db.Model):
         # with is_admin=None, which no admin route accepts.
         super().__init__(**kw)
 
+
 class Node(db.Model):
     __tablename__ = "nodes"
     id = db.Column(db.Integer, primary_key=True)
@@ -65,6 +81,7 @@ class Node(db.Model):
     enable = db.Column(db.Boolean, default=True)
     last_seen = db.Column(db.DateTime, nullable=True)
 
+
 class TrafficLog(db.Model):
     __tablename__ = "traffic_logs"
     id = db.Column(db.Integer, primary_key=True)
@@ -74,6 +91,7 @@ class TrafficLog(db.Model):
     download = db.Column(db.BigInteger, default=0)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+
 class InviteCode(db.Model):
     __tablename__ = "invite_codes"
     id = db.Column(db.Integer, primary_key=True)
@@ -82,6 +100,7 @@ class InviteCode(db.Model):
     consumed = db.Column(db.Boolean, default=False)
     consumed_by = db.Column(db.String(64), default="")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
 
 class Goods(db.Model):
     __tablename__ = "goods"
@@ -94,6 +113,7 @@ class Goods(db.Model):
     days = db.Column(db.Integer, default=30)
     status = db.Column(db.Integer, default=1)
 
+
 class Order(db.Model):
     __tablename__ = "orders"
     id = db.Column(db.Integer, primary_key=True)
@@ -103,6 +123,7 @@ class Order(db.Model):
     amount = db.Column(db.Float, default=0)
     out_trade_no = db.Column(db.String(64), unique=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
 
 def _hash(pw, salt):
     return hashlib.sha256(f"{salt}:{pw}".encode()).hexdigest()

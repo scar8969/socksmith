@@ -2,17 +2,20 @@
 # class: models.py already imports it the same way for its column defaults.
 from datetime import datetime
 
+from flask import Blueprint, current_app, jsonify, request
+
 from ..models import GB, Node, Order, TrafficLog, User, db
 from .sub import generate_subscription
 
-from flask import Blueprint, jsonify, request, current_app
-
 bp = Blueprint("api", __name__)
+
 
 def _current_user():
     from flask import session
+
     uid = session.get("user_id")
     return User.query.get(uid) if uid else None
+
 
 @bp.get("/api/subscribe")
 def subscribe():
@@ -28,11 +31,18 @@ def subscribe():
     nodes = Node.query.filter_by(enable=True).all()
     return generate_subscription(user, nodes, request.args.get("sub_type", "ss"))
 
+
 @bp.get("/api/health")
 def health():
-    return jsonify({"status": "ok", "users": User.query.count(),
-                    "nodes": Node.query.count(),
-                    "enabled_users": sum(1 for u in User.query.all() if u.enable)})
+    return jsonify(
+        {
+            "status": "ok",
+            "users": User.query.count(),
+            "nodes": Node.query.count(),
+            "enabled_users": sum(1 for u in User.query.all() if u.enable),
+        }
+    )
+
 
 @bp.post("/api/traffic")
 def traffic():
@@ -52,28 +62,40 @@ def traffic():
         node.used_traffic = (node.used_traffic or 0) + u.get("upload", 0) + u.get("download", 0)
         if user.overflow():
             user.enable = False
-        db.session.add(TrafficLog(user_id=user.id, node_id=node.id,
-                                  upload=u.get("upload", 0), download=u.get("download", 0)))
+        db.session.add(
+            TrafficLog(
+                user_id=user.id,
+                node_id=node.id,
+                upload=u.get("upload", 0),
+                download=u.get("download", 0),
+            )
+        )
     db.session.commit()
     return jsonify({"status": "ok"})
+
 
 @bp.post("/api/admin/users")
 def admin_add_user():
     if not (_u := _current_user()) or not _u.is_admin:
         return jsonify({"error": "admin required"}), 403
     d = request.get_json(force=True, silent=True) or {}
-    user = User(username=d["username"], ss_port=d.get("port", 8388),
-                ss_password=d.get("password", ""), rate_up_mbps=d.get("rate_up", 10),
-                rate_down_mbps=d.get("rate_down", 10), total_traffic=d.get("traffic", 20 * GB))
+    user = User(
+        username=d["username"],
+        ss_port=d.get("port", 8388),
+        ss_password=d.get("password", ""),
+        rate_up_mbps=d.get("rate_up", 10),
+        rate_down_mbps=d.get("rate_down", 10),
+        total_traffic=d.get("traffic", 20 * GB),
+    )
     user.set_password(d.get("password", ""))
     db.session.add(user)
     db.session.commit()
     return jsonify({"status": "success", "user": user.to_dict()})
+
 
 @bp.get("/api/admin/analytics")
 def analytics():
     if not (_u := _current_user()) or not _u.is_admin:
         return jsonify({"error": "admin required"}), 403
     revenue = sum(o.amount for o in Order.query.filter_by(status=1).all())
-    return jsonify({"revenue": revenue, "users": User.query.count(),
-                    "nodes": Node.query.count()})
+    return jsonify({"revenue": revenue, "users": User.query.count(), "nodes": Node.query.count()})
