@@ -3,13 +3,13 @@ requires = ["setuptools>=69", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "a5-moess"
+name = "socksmith"
 version = "0.1.0"
-description = "A self-hosted Shadowsocks panel: accounts with per-user ports and rate limits, a"
+description = "Self-hosted Shadowsocks panel: per-user ports, rate limits, traffic accounting and an admin API."
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
-authors = [{ name = "project-skeletons maintainers" }]
+authors = [{ name = "Priyanshu Rout" }]
 keywords = ["flask", "service", "moess"]
 classifiers = [
   "Development Status :: 4 - Beta",
@@ -46,7 +46,7 @@ Documentation = "https://example.invalid/moess/docs"
 Issues = "https://example.invalid/moess/issues"
 
 [project.scripts]
-a5-moess = "moess.cli:main"
+socksmith = "moess.cli:main"
 
 [tool.setuptools]
 package-dir = { "" = "src" }

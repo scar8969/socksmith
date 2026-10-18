@@ -9,7 +9,7 @@ they do, and what breaks first under load.
 
 ## 1. Context
 
-a5_moess is a single-process Flask service. It owns its own database (SQLite by
+socksmith is a single-process Flask service. It owns its own database (SQLite by
 default, any SQLAlchemy-supported backend via `DATABASE_URL`) and is deployed
 behind a reverse proxy or an orchestrator.
 
@@ -76,7 +76,7 @@ flowchart TB
 | `templates/base.html` | asset |
 | `templates/index.html` | asset |
 | `templates/login.html` | asset |
-| `tests/test_a5_moess.py` | module |
+| `tests/test_socksmith.py` | module |
 
 ---
 
@@ -138,12 +138,12 @@ writable lives under `/app`.
 
 | Table | Owner |
 | --- | --- |
-| `users` | owned by `a5_moess` |
-| `nodes` | owned by `a5_moess` |
-| `traffic_logs` | owned by `a5_moess` |
-| `invite_codes` | owned by `a5_moess` |
-| `goods` | owned by `a5_moess` |
-| `orders` | owned by `a5_moess` |
+| `users` | owned by `socksmith` |
+| `nodes` | owned by `socksmith` |
+| `traffic_logs` | owned by `socksmith` |
+| `invite_codes` | owned by `socksmith` |
+| `goods` | owned by `socksmith` |
+| `orders` | owned by `socksmith` |
 
 Tables are created by the application's own bootstrap on first use. No migration
 tool is wired in; the schema is additive, and the service tolerates a missing or

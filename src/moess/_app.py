@@ -1,4 +1,4 @@
-"""a5_moess - application factory.
+"""socksmith - application factory.
 
 Templates live in the project-root templates/ directory, so the template folder is passed
 explicitly: Flask(__name__) alone would look in /templates, and the SQLite file is pinned to

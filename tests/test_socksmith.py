@@ -1,4 +1,4 @@
-"""A5 moeSS — tests. Run: pytest test_a5_moess.py"""
+"""A5 moeSS — tests. Run: pytest test_socksmith.py"""
 import sys, os
 
 import pytest

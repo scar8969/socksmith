@@ -34,7 +34,7 @@ RUN groupadd --system --gid 1001 app \
 WORKDIR /app
 
 COPY --from=builder /wheels /wheels
-RUN python -m pip install --no-cache-dir --no-index --find-links=/wheels a5-moess \
+RUN python -m pip install --no-cache-dir --no-index --find-links=/wheels socksmith \
  && rm -rf /wheels \
  && mkdir -p /var/lib/moess/instance /var/lib/moess/log \
  && chown -R app:app /var/lib/moess /app
