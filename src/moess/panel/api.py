@@ -1,9 +1,9 @@
 # `datetime.utcnow()` off the *module* is gone in this interpreter, so bind the
 # class: models.py already imports it the same way for its column defaults.
-from datetime import datetime
 
 from flask import Blueprint, current_app, jsonify, request
 
+from ..clock import utcnow
 from ..models import GB, Node, Order, TrafficLog, User, db
 from .sub import generate_subscription
 
@@ -52,7 +52,7 @@ def traffic():
     node = Node.query.get(d.get("node_id"))
     if not node:
         return jsonify({"error": "node not found"}), 404
-    node.last_seen = datetime.utcnow()
+    node.last_seen = utcnow()
     for u in d.get("users", []):
         user = User.query.get(u.get("id"))
         if not user:

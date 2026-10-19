@@ -133,7 +133,7 @@ Produced on this checkout by `pytest --cov` and by booting `wsgi.py` and issuing
 | --- | --- |
 | Tests | **23 / 23 passed** (4.0 s, exit 0) |
 | Line coverage | **66.0%** — 488 of 702 statements |
-| Source | 16 files / 1,547 lines |
+| Source | 16 files / 1,566 lines |
 | Test code | 4 files / 254 lines |
 | Documented paths | 5 in the spec, 3 GET |
 | Live probe | 12 GET requests to the booted app, **10 answered 200** |
@@ -169,7 +169,7 @@ socksmith/
 │   ├── config.py                       174  Environment-driven configuration for moess
 │   ├── observability.py                169  Structured logging and request correlation for moess
 │   ├── cli.py                          148  moeSS CLI - read the panel's counters and call its J
-│   ├── models.py                       130  
+│   ├── models.py                       131  
 │   ├── app.py                          120  Application factory for moess
 │   ├── errors.py                       108  Typed application errors and their HTTP mapping for 
 │   ├── panel/api.py                    102  
