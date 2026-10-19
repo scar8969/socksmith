@@ -4,7 +4,7 @@ Every line below was produced by a command run against this exact checkout, on t
 
 | | |
 | --- | --- |
-| Generated | 2026-10-19 02:20 |
+| Generated | 2026-10-19 09:39 |
 | Python | 3.14.7 |
 | Platform | Windows 11 |
 
@@ -15,7 +15,7 @@ python -m pytest -q
 ```
 
 - exit code **0**
-- 23 passed in 2.51s
+- 23 passed in 1.71s
 
 ## Static gates
 
@@ -37,6 +37,25 @@ The application was imported through `wsgi.py` and each GET path declared in `op
 | 200 | `/api/health` | 54 | application/json |
 
 3 paths walked, 0 of them raised or answered 5xx.
+
+## CLI
+
+```
+usage: moess [-h] [--url URL] {health,subscribe,report,stats} ...
+
+moeSS panel CLI
+
+positional arguments:
+  {health,subscribe,report,stats}
+    health              GET /api/health from a running instance
+    subscribe           print a user's subscription config
+    report              POST a traffic sample to /api/traffic
+    stats               counters read straight from the SQLite file
+
+options:
+  -h, --help            show this help message and exit
+  --url URL             base URL of a running instance (default $MOESS_URL or
+```
 
 ## Screenshots
 

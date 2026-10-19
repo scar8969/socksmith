@@ -141,3 +141,7 @@ def main(argv=None):
         p.print_help()
         return 0
     return args.func(args)
+
+
+if __name__ == "__main__":  # pragma: no cover - manual entry point
+    raise SystemExit(main())
